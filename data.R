@@ -16,7 +16,7 @@ library(dplyr)
 
 # Load
 ipums <-
-  read.csv("/Users/amandaharrison/Desktop/DAP2/final-project-fredrickson/data/usa_00012.csv",
+  read.csv("/Users/amandaharrison/Desktop/DAP2/final-project-fredrickson/data/usa_00013.csv",
     stringsAsFactors = FALSE
   )
 
@@ -128,84 +128,6 @@ lfp_by_age_vet <- ipums_cleaned_no_na %>%
   ungroup()
 
 # Cleaning for plot 3
-
-library(dplyr)
-library(ggplot2)
-
-# Convert VDISRATE to numeric and filter for veterans
-veterans_data_cps <- ipums_cps_cleaned %>%
-  mutate(VDISRATE = as.numeric(as.character(VDISRATE))) %>%
-  filter(VETSTAT == 2)  # Assuming '2' represents veterans
-
-# Create AGE_GROUP, ensuring that AGE is not NA
-veterans_data_cps <- veterans_data_cps %>%
-  filter(!is.na(AGE)) %>%
-  mutate(
-    AGE_GROUP = cut(AGE,
-                    breaks = c(18, 30, 40, 50, 60, 70, Inf),
-                    right = FALSE,
-                    labels = c("18-29", "30-39", "40-49", "50-59", "60-69", "70+"))
-  )
-
-# Recode VDISRATE into DISABILITY_SIMPLE, excluding "Not in Universe"
-veterans_data_cps <- veterans_data_cps %>%
-  mutate(
-    DISABILITY_SIMPLE = case_when(
-      VDISRATE == 10 ~ "0%",
-      VDISRATE %in% c(20, 21, 22, 23) ~ "1-29%",
-      VDISRATE %in% c(29, 30, 31) ~ "30-40%",
-      VDISRATE == 39 ~ "50-60%",
-      VDISRATE %in% c(40, 41, 42) ~ "50+%",
-      VDISRATE %in% c(43, 44, 45, 46, 47) ~ "70%+",
-      VDISRATE == 56 ~ "100%",
-      VDISRATE %in% c(996, 997, 998) ~ "No response",
-      VDISRATE == 999 ~ "Not in Universe",
-      TRUE ~ "Unknown"  # Catch-all for any other values
-    )
-  ) %>%
-  filter(DISABILITY_SIMPLE != "Not in Universe" & DISABILITY_SIMPLE != "Unknown")
-
-# Calculate the average family income for non-veterans by age group
-non_vet_avg_income <- ipums_cps_cleaned %>%
-  filter(VETSTAT == 1, !is.na(AGE)) %>%
-  mutate(
-    AGE_GROUP = cut(AGE,
-                    breaks = c(18, 30, 40, 50, 60, 70, Inf),
-                    right = FALSE,
-                    labels = c("18-29", "30-39", "40-49", "50-59", "60-69", "70+"))
-  ) %>%
-  group_by(AGE_GROUP) %>%
-  summarise(
-    Avg_NonVet_FAMINC = mean(FAMINC, na.rm = TRUE),
-    .groups = 'drop'
-  )
-
-# Calculate the average family income by age group and disability status for veterans
-average_income_by_disability <- veterans_data_cps %>%
-  group_by(AGE_GROUP, DISABILITY_SIMPLE) %>%
-  summarise(
-    Avg_FAMINC = mean(FAMINC, na.rm = TRUE),
-    .groups = 'drop'
-  )
-
-# Generate the plot with the average non-veteran income line included
-ggplot(average_income_by_disability, aes(x = DISABILITY_SIMPLE, y = Avg_FAMINC, fill = DISABILITY_SIMPLE)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  geom_hline(data = non_vet_avg_income, aes(yintercept = Avg_NonVet_FAMINC), color = "red", size = 1) +
-  facet_wrap(~ AGE_GROUP, scales = "free_y") +
-  labs(
-    title = "Average Family Income by Disability Rating and Age Group",
-    x = "Disability Rating",
-    y = "Average Family Income",
-    fill = "Disability Rating"
-  ) +
-  scale_fill_brewer(palette = "Set2") +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    legend.position = "bottom"
-  ) +
-  guides(fill = guide_legend(title = "Disability Rating"))
 
 # 3. APIs or web scraping automatic data retrieval (for further text processing)
 
