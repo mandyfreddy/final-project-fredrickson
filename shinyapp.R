@@ -5,14 +5,14 @@
 
 # Two interactive Shiny plots
 
+# Shiny app 1
+# This app will allow users to select a range of disability ratings to view average
+# earnings and labor force participation for those ratings, and compared to their age group
+
 # Library
 library(shiny)
 library(ggplot2)
 library(dplyr)
-
-# Shiny app 1
-# This app will allow users to select a range of disability ratings to view average
-# earnings and labor force participation for those ratings, and compared to their age group
 
 # UI
 ui <- fluidPage(
@@ -20,13 +20,11 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       sliderInput("disabilityRange", "Select Disability Rating Range:",
-        min = min(ipums_cps$VDISRATE, na.rm = TRUE),
-        max = max(ipums_cps$VDISRATE, na.rm = TRUE),
-        value = c(min(ipums_cps$VDISRATE, na.rm = TRUE), max(ipums_cps$VDISRATE, 
-                                                             na.rm = TRUE))
-      ),
-      checkboxGroupInput("stateInput", "Select States:", 
-                         choices = unique(ipums_cps$STATEFIP))
+                  min = min(as.numeric(as.character(ipums_cps_cleaned$VDISRATE)), na.rm = TRUE),
+                  max = max(as.numeric(as.character(ipums_cps_cleaned$VDISRATE)), na.rm = TRUE),
+                  value = c(min(as.numeric(as.character(ipums_cps_cleaned$VDISRATE)), na.rm = TRUE), 
+                            max(as.numeric(as.character(ipums_cps_cleaned$VDISRATE)), na.rm = TRUE))
+      )
     ),
     mainPanel(
       tabsetPanel(
@@ -37,55 +35,75 @@ ui <- fluidPage(
   )
 )
 
+
 # Server
 server <- function(input, output) {
+  
   filtered_data <- reactive({
-    ipums_cps %>%
+    ipums_cps_cleaned %>%
+      mutate(VDISRATE = as.numeric(as.character(VDISRATE))) %>%
       filter(
         VDISRATE >= input$disabilityRange[1], VDISRATE <= input$disabilityRange[2],
-        STATEFIP %in% input$stateInput
+        !is.na(age_group) # Filter out NA values for age_group
+      ) %>%
+      group_by(VDISRATE, age_group) %>%
+      summarise(
+        Average_INCWAGE = mean(INCWAGE, na.rm = TRUE),
+        Labor_Force_Participation = mean(as.numeric(LABFORCE) - 1, na.rm = TRUE)
       )
   })
-
+  
   output$earningsPlot <- renderPlot({
-    ggplot(data = filtered_data(), aes(x = as.factor(VDISRATE), y = INCWAGE)) +
-      geom_boxplot() +
+    ggplot(data = filtered_data(), aes(x = as.factor(VDISRATE), 
+                                       y = Average_INCWAGE, fill = age_group)) +
+      geom_bar(stat = "identity", position = "dodge") +
       labs(
-        title = "Earnings by Disability Rating",
+        title = "Average Earnings by Disability Rating and Age Group",
         x = "Disability Rating",
-        y = "Earnings"
-      )
-  })
-
-  output$lfpPlot <- renderPlot({
-    ggplot(data = filtered_data(), aes(x = as.factor(VDISRATE), fill = as.factor(LABFORCE))) +
-      geom_bar(position = "fill") +
-      labs(
-        title = "Labor Force Participation by Disability Rating",
-        x = "Disability Rating",
-        y = "Proportion in Labor Force"
+        y = "Average Earnings"
       ) +
-      scale_fill_discrete(name = "Labor Force Participation", labels = c("Not in LFP", "In LFP"))
+      scale_fill_brewer(palette = "Set1")
+  })
+  
+  output$lfpPlot <- renderPlot({
+    ggplot(data = filtered_data(), aes(x = as.factor(VDISRATE), 
+                                       y = Labor_Force_Participation, fill = age_group)) +
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(
+        title = "Labor Force Participation by Disability Rating and Age Group",
+        x = "Disability Rating",
+        y = "Labor Force Participation Rate"
+      ) +
+      scale_fill_brewer(palette = "Set1")
   })
 }
 
-# Run the application
+# Run the application 
 shinyApp(ui = ui, server = server)
 
-# 2. Shiny app 
-# This app will allow users to select a state to see veteran economic outcomes in 
+
+# 2. Shiny app
+# This app will allow users to select a state on a map to see veteran economic outcomes in
 # income and LFP in that state.
+
+library(shiny)
+library(ggplot2)
+library(dplyr)
 
 # UI
 ui <- fluidPage(
-  titlePanel("Regional Analysis of Veterans' Economic Outcomes"),
+  titlePanel("By State Analysis of Veterans' Economic Outcomes"),
   sidebarLayout(
     sidebarPanel(
       selectInput("veteranStatus", "Select Population:",
-        choices = c("All", "Veterans", "Non-Veterans")
+                  choices = c("All", "Veterans", "Non-Veterans")
       ),
       selectInput("economicMeasure", "Select Economic Outcome:",
-        choices = c("Earnings", "Labor Force Participation")
+                  choices = c("Earnings", "Labor Force Participation")
+      ),
+      selectInput("stateSelection", "Select State:",
+                  choices = sort(unique(ipums_cleaned$STATEFIP)),
+                  selected = 1 
       )
     ),
     mainPanel(
@@ -94,34 +112,44 @@ ui <- fluidPage(
   )
 )
 
-# Server
 server <- function(input, output) {
+  
   output$comparisonPlot <- renderPlot({
-    # This is a placeholder. You would need to filter and generate the appropriate plots
-    # based on the selected veteran status and economic measure.
-    # Below is a simple example of what the logic could look like:
-
-    data_to_plot <- ipums_cleaned # or ipums_cps based on the analysis you want to perform
+    
+    data_to_plot <- ipums_cleaned %>%
+      filter(STATEFIP == input$stateSelection, VETSTAT %in% c(1, 2))
+    
     if (input$veteranStatus != "All") {
-      data_to_plot <- data_to_plot[data_to_plot$VETSTAT == (input$veteranStatus == "Veterans"), ]
+      vet_filter <- ifelse(input$veteranStatus == "Veterans", 2, 1)
+      data_to_plot <- data_to_plot %>% filter(VETSTAT == vet_filter)
     }
-
+    
     if (input$economicMeasure == "Earnings") {
-      ggplot(data_to_plot, aes(x = STATEFIP, y = INCEARN, group = VETSTAT, fill = VETSTAT)) +
-        geom_bar(stat = "summary", fun = "mean") +
+      ggplot(data_to_plot, aes(x = as.factor(VETSTAT), y = INCWAGE, 
+                               fill = as.factor(VETSTAT))) +
+        geom_bar(stat = "summary", fun = "mean", position = "dodge") +
         labs(
-          title = "Average Earnings by State and Veteran Status",
-          x = "State",
+          title = paste("Average Earnings in", input$stateSelection, "by Veteran Status"),
+          x = "Veteran Status",
           y = "Average Earnings"
-        )
+        ) +
+        scale_fill_manual(values = c("#ffd92f", "#7570b3"), 
+                          labels = c("Non-Veterans", "Veterans")) +
+        theme_minimal() +
+        guides(fill = guide_legend(title = "Veteran Status"))
     } else {
-      ggplot(data_to_plot, aes(x = STATEFIP, fill = LABFORCE)) +
-        geom_bar(position = "fill") +
+      ggplot(data_to_plot, aes(x = as.factor(VETSTAT), y = as.numeric(LABFORCE), 
+                               fill = as.factor(VETSTAT))) +
+        geom_bar(stat = "summary", fun = "mean", position = "dodge") +
         labs(
-          title = "Labor Force Participation by State",
-          x = "State",
+          title = paste("Labor Force Participation in", input$stateSelection, "by Veteran Status"),
+          x = "Veteran Status",
           y = "Proportion in Labor Force"
-        )
+        ) +
+        scale_fill_manual(values = c("#ffd92f", "#7570b3"), 
+                          labels = c("Non-Veterans", "Veterans")) +
+        theme_minimal() +
+        guides(fill = guide_legend(title = "Veteran Status"))
     }
   })
 }

@@ -16,16 +16,12 @@ library(dplyr)
 
 # Load
 ipums <-
-  read.csv("/Users/amandaharrison/Desktop/DAP2/final-project-fredrickson/data/usa_00013.csv",
+  read.csv("/Users/amandaharrison/Desktop/DAP2/final-project-fredrickson/data/usa_00014.csv",
     stringsAsFactors = FALSE
   )
 
 # Drop columns
 ipums_cleaned <- ipums %>% select(-c(2:7, 9:12))
-
-# Drop extra years
-ipums_cleaned <- ipums_cleaned[!(ipums_cleaned$YEAR %in% c(2006, 2021, 2022)), ]
-# Now it is just 2011 and 2016 data, it was a bit slow to load before
 
 # Fix states
 # Ensure the STATEFIP values are numeric
@@ -65,17 +61,12 @@ library(ipumsr)
 
 # Load
 ddi <-
-  read_ipums_ddi("/Users/amandaharrison/Desktop/DAP2/final-project-fredrickson/data/cps_00002.xml")
+  read_ipums_ddi("/Users/amandaharrison/Desktop/DAP2/final-project-fredrickson/data/cps_00003.xml")
 ipums_cps <- read_ipums_micro(ddi)
 
 # Clean
 # Drop columns
 ipums_cps_cleaned <- ipums_cps %>% select(-c(2, 3))
-
-# Drop extra years
-ipums_cps_cleaned <- ipums_cps_cleaned[!(ipums_cps_cleaned$YEAR %in%
-  c(2019, 2020, 2021, 2024)), ]
-# Now it is just 2022 and 2023 data to perhaps show trends differently
 
 # Replace the numeric STATEFIP values with the corresponding state names
 ipums_cps_cleaned$STATEFIP <- as.numeric(as.character(ipums_cps_cleaned$STATEFIP))
@@ -93,8 +84,8 @@ ipums_cleaned_no_na <- na.omit(ipums_cleaned)
 ipums_cleaned_no_na <- ipums_cleaned_no_na %>%
   mutate(
     AGE_GROUP = cut(AGE,
-                    breaks = c(18, 30, 40, 50, 60, 70, Inf),
-                    right = FALSE, labels = c("18-29", "30-39", "40-49", "50-59", "60-69", "70+")
+      breaks = c(18, 30, 40, 50, 60, 70, Inf),
+      right = FALSE, labels = c("18-29", "30-39", "40-49", "50-59", "60-69", "70+")
     ),
     DISABILITY_SIMPLE = case_when(
       VETDISAB == 1 ~ "No rating",
@@ -113,7 +104,7 @@ wage_summary <- ipums_cleaned_no_na %>%
 # Cleaning for plot 2
 # Filter the data to include only veterans
 veterans_data <- ipums_cleaned_no_na %>%
-  filter(VETSTAT == 2)  # Assuming '2' represents veterans
+  filter(VETSTAT == 2) # Assuming '2' represents veterans
 
 # Calculate the proportion in the labor force for each age group and disability rating
 lfp_by_age_disability <- veterans_data %>%
@@ -126,8 +117,6 @@ lfp_by_age_vet <- ipums_cleaned_no_na %>%
   group_by(AGE_GROUP, VETSTAT) %>%
   summarize(Proportion_In_LFP = mean(as.numeric(LABFORCE) == 2, na.rm = TRUE)) %>%
   ungroup()
-
-# Cleaning for plot 3
 
 # 3. APIs or web scraping automatic data retrieval (for further text processing)
 
