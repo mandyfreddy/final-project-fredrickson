@@ -7,7 +7,7 @@
 
 # One from the web automatically using APIs or web scraping
 # All processing here in the code - including merging and reshaping
-# Any auto data retrieval will have an option to toggle off accessing the web 
+# Any auto data retrieval will have an option to toggle off accessing the web
 # if data is already downloaded
 
 # 1. IPUMS data
@@ -16,7 +16,7 @@
 library(dplyr)
 library(readr)
 
-# The path to your .zip file
+# Path .zip file
 zip_path <- "/Users/amandaharrison/Desktop/DAP2/final-project-fredrickson/data/usa_00014.csv.zip"
 
 # Use read_csv to read the .zip file directly
@@ -26,7 +26,7 @@ ipums <- read_csv(zip_path, guess_max = 10000)
 ipums_cleaned <- ipums %>% select(-c(2:6, 8))
 
 # Fix states
-# Create a mapping of STATEFIP codes to state names based on the codebook provided
+# Create a mapping of STATEFIP codes to state names
 state_codes <- c(
   "01" = "Alabama", "02" = "Alaska", "04" = "Arizona", "05" = "Arkansas",
   "06" = "California", "08" = "Colorado", "09" = "Connecticut", "10" = "Delaware",
@@ -43,8 +43,7 @@ state_codes <- c(
   "54" = "West Virginia", "55" = "Wisconsin", "56" = "Wyoming"
 )
 
-# Assuming your STATEFIP column is character and has leading zeros
-# If it is numeric, convert it to a character with leading zeros first
+# Convert
 ipums_cleaned$STATEFIP <- sprintf("%02d", as.integer(ipums_cleaned$STATEFIP))
 
 # Create the STATENAME column by mapping the STATEFIP codes to state names
@@ -107,7 +106,7 @@ wage_summary <- ipums_cleaned %>%
 
 # Filter the data to include only veterans
 veterans_data <- ipums_cleaned %>%
-  filter(VETSTAT == 2) # Assuming '2' represents veterans
+  filter(VETSTAT == 2)
 
 # Calculate the proportion in the labor force for each age group and disability rating
 lfp_by_age_disability <- veterans_data %>%
@@ -115,7 +114,7 @@ lfp_by_age_disability <- veterans_data %>%
   summarize(Proportion_In_LFP = mean(as.numeric(LABFORCE) == 2, na.rm = TRUE)) %>%
   ungroup()
 
-lfp_by_age_disability_filtered <- lfp_by_age_disability %>% 
+lfp_by_age_disability_filtered <- lfp_by_age_disability %>%
   filter(!is.na(AGE_GROUP))
 
 # Cleaning for plot 3
@@ -124,14 +123,14 @@ library(ggplot2)
 library(dplyr)
 library(maps)
 
-# First, calculate the average income for veterans and non-veterans by state
+# Calculate the average income for veterans and non-veterans by state
 average_income_by_state <- ipums_cps_cleaned %>%
-  filter(VETSTAT %in% c(1, 2)) %>% # Assuming 1 is non-veteran and 2 is veteran
+  filter(VETSTAT %in% c(1, 2)) %>%
   group_by(STATENAME) %>%
   summarize(
     Average_Income_Veterans = mean(HHINCOME[VETSTAT == 2], na.rm = TRUE),
     Average_Income_NonVeterans = mean(HHINCOME[VETSTAT == 1], na.rm = TRUE),
-    .groups = 'drop'
+    .groups = "drop"
   ) %>%
   mutate(Veterans_Higher = Average_Income_Veterans > Average_Income_NonVeterans)
 
@@ -142,11 +141,61 @@ average_income_by_state$STATENAME <- tolower(average_income_by_state$STATENAME)
 states_map <- map_data("state")
 
 # Merge the income data with the map data
-map_data <- left_join(states_map, average_income_by_state, by = c("region" = "STATENAME"))
+map_data <- left_join(states_map, average_income_by_state,
+  by = c("region" = "STATENAME")
+)
 
-# 3. APIs or web scraping automatic data retrieval (for further text processing)
+# 3. Web scraping (including automatic data retrieval )
 
-# need to do this
+# Function to check if data is already downloaded and read in, otherwise scrape and save
+scrape_and_save_content <- function(url, selector, file_name) {
+  if (file.exists(file_name)) {
+    message("Reading from local file: ", file_name)
+    content <- read_lines(file_name)
+  } else {
+    message("Scraping content from web: ", url)
+    webpage <- read_html(url)
+    content <- webpage %>%
+      html_element(selector) %>%
+      html_text(trim = TRUE)
+    write_lines(content, file_name)
+  }
+  return(content)
+}
+
+# Define articles and selectors
+articles <- list(
+  list(
+    url = "https://americandisabilityactiongroup.com/are-va-benefits-being-reduced-if-you-earn-too-much/",
+    selector = "#post-1896 > div > div",
+    file_name = "article1.txt"
+  ),
+  list(
+    url = "https://www.moaa.org/content/publications-and-media/news-articles/2023-news-articles/advocacy/the-va-has-no-plans-to-cut-off-wealthy-veterans.-heres-what-you-need-to-know/",
+    selector = "body > div.with-toolbar > article > div > div > div.col-xl-8.news-article__col > div:nth-child(2)",
+    file_name = "article2.txt"
+  ),
+  list(
+    url = "https://www.washingtonpost.com/opinions/2023/04/03/veterans-affairs-disability-payments-overdue-update/",
+    selector = "#__next > article > div.meteredContent.grid-center",
+    file_name = "article3.txt"
+  ),
+  list(
+    url = "https://hunterseven.org/vacuts/",
+    selector = "body > div.elementor.elementor-2539.elementor-location-single.post-3199.post.type-post.status-publish.format-standard.has-post-thumbnail.hentry.category-news.tag-cbo.tag-disability.tag-military.tag-pact-act.tag-service-connection.tag-va-benefits.tag-veteran.tag-veteran-health > section.elementor-section.elementor-top-section.elementor-element.elementor-element-baeefbe.elementor-section-boxed.elementor-section-height-default.elementor-section-height-default > div",
+    file_name = "article4.txt"
+  ),
+  list(
+    url = "https://vabenefitattorneys.com/will-veteran-disability-benefits-be-cut-in-2024/",
+    selector = "#post-4230 > div > div",
+    file_name = "article5.txt"
+  )
+)
+
+# Loop through articles to scrape or read from local files
+content_list <- lapply(articles, function(article) {
+  scrape_and_save_content(article$url, article$selector, article$file_name)
+})
 
 # Basic visualizations for my understanding and for the writeup
 

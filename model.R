@@ -3,7 +3,26 @@
 # DAP2 Final Project
 # Preliminary Analysis of Veteran Disability
 
-## Analysis
+## model.R
 
-# Fit a model to data and report basic results
-# Doesn't have to be great, show data was prepared and is ready for model fitting
+library(dplyr)
+library(ggplot2)
+
+# Preliminary regression model of ipums_cleaned
+model <- lm(INCTOT ~ AGE + LABFORCE + VETSTAT + AGE_GROUP + DISABILITY_SIMPLE, 
+            data = ipums_cleaned)
+summary(model)
+
+# Linear regression with INCTOT as the dependent variable
+model_2 <- lm(INCTOT ~ DISABILITY_SIMPLE + AGE, data = ipums_cleaned)
+summary(model_2)
+
+# Now let's do something simple with ipums_cps_cleaned
+
+# Linear regression for ipums_cps_cleaned with HHINCOME
+veteran_hhincome_model <- lm(HHINCOME ~ VETSTAT, data = ipums_cps_cleaned)
+summary(veteran_hhincome_model)
+
+# Linear regression for ipums_cps_cleaned with FAMINC
+veteran_faminc_model <- lm(FAMINC ~ VETSTAT, data = ipums_cps_cleaned)
+summary(veteran_faminc_model)

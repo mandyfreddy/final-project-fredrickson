@@ -110,7 +110,7 @@ ui <- fluidPage(
 
 # Server
 server <- function(input, output) {
-  # Filtered data based on user input
+  # Filtered data based on input
   reactive_filtered_data <- reactive({
     ipums_cleaned %>%
       filter(

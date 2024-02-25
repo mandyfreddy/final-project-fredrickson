@@ -9,6 +9,7 @@ library(ggplot2)
 
 # Plot 1
 # Labor Force Participation by Age Group and Veteran Status
+
 plot_1 <-ggplot(data = lfp_by_age_vet, aes(
   x = AGE_GROUP, y = Proportion_In_LFP,
   fill = as.factor(VETSTAT)
