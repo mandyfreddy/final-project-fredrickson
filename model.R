@@ -8,11 +8,6 @@
 library(dplyr)
 library(ggplot2)
 
-# Preliminary regression model of ipums_cleaned
-model <- lm(INCTOT ~ AGE + LABFORCE + VETSTAT + AGE_GROUP + DISABILITY_SIMPLE, 
-            data = ipums_cleaned)
-summary(model)
-
 # Linear regression with INCTOT as the dependent variable
 model_2 <- lm(INCTOT ~ DISABILITY_SIMPLE + AGE, data = ipums_cleaned)
 summary(model_2)

@@ -5,11 +5,6 @@
 
 ## data.R
 
-# One from the web automatically using APIs or web scraping
-# All processing here in the code - including merging and reshaping
-# Any auto data retrieval will have an option to toggle off accessing the web
-# if data is already downloaded
-
 # 1. IPUMS data
 
 # Libraries
