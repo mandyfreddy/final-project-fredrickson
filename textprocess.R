@@ -7,7 +7,7 @@
 
 library(rvest)
 library(tidytext)
-library(dplyr)
+library(tidyverse)
 library(stringr)
 library(ggplot2)
 
@@ -44,7 +44,7 @@ sentiment_analysis <- tidy_text %>%
 print(sentiment_analysis)
 
 # Plotting the sentiment scores for each article
-ggplot(sentiment_analysis, aes(
+plot_4 <- ggplot(sentiment_analysis, aes(
   x = article_id, y = sentiment_score,
   fill = article_id
 )) +
@@ -59,12 +59,18 @@ ggplot(sentiment_analysis, aes(
   coord_flip() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+ggsave(
+  filename =
+    "/Users/amandaharrison/Desktop/DAP2/final-project-fredrickson/images/plot_4.png",
+  plot = plot_4, width = 10, height = 8, units = "in"
+)
+
 # Reshape for plotting counts of positive and negative words
 sentiment_counts <- sentiment_analysis %>%
   gather(key = "sentiment", value = "count", -article_id, -sentiment_score)
 
 # Plotting the counts of positive and negative words
-ggplot(sentiment_counts, aes(x = article_id, y = count, fill = sentiment)) +
+plot_5 <- ggplot(sentiment_counts, aes(x = article_id, y = count, fill = sentiment)) +
   geom_bar(stat = "identity", position = "dodge") +
   theme_minimal() +
   labs(
@@ -75,3 +81,9 @@ ggplot(sentiment_counts, aes(x = article_id, y = count, fill = sentiment)) +
   ) +
   coord_flip() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggsave(
+  filename =
+    "/Users/amandaharrison/Desktop/DAP2/final-project-fredrickson/images/plot_5.png",
+  plot = plot_5, width = 10, height = 8, units = "in"
+)

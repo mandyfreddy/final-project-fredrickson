@@ -89,6 +89,10 @@ server <- function(input, output) {
 # Run the application
 shinyApp(ui = ui, server = server)
 
+# 2. Shiny app
+# This app will allow users to select a state on a map to see veteran economic outcomes in
+# income and LFP in that state compared to non-veterans.
+
 # UI
 ui <- fluidPage(
   titlePanel("Veteran vs. Non-Veteran Economic Outcomes Comparison"),
