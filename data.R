@@ -140,44 +140,59 @@ map_data <- left_join(states_map, average_income_by_state,
   by = c("region" = "STATENAME")
 )
 
-# 3. Web scraping (including automatic data retrieval )
+# 3. Web scraping (including automatic data retrieval)
+
+# Load required libraries
+library(rvest)
+library(readr)
 
 # Function to check if data is already downloaded and read in, otherwise scrape and save
-scrape_and_save_content <- function(url, selector, file_name) {
-  if (file.exists(file_name)) {
-    message("Reading from local file: ", file_name)
-    content <- read_lines(file_name)
+scrape_and_save_content <- function(url, selector, file_name, data_dir) {
+  full_path <- file.path(data_dir, file_name)
+  if (file.exists(full_path)) {
+    message("Reading from local file: ", full_path)
+    content <- read_lines(full_path)
   } else {
     message("Scraping content from web: ", url)
     webpage <- read_html(url)
     content <- webpage %>%
       html_element(selector) %>%
       html_text(trim = TRUE)
-    write_lines(content, file_name)
+    # Ensure the data directory exists
+    dir.create(data_dir, recursive = TRUE, showWarnings = FALSE)
+    write_lines(content, full_path)
   }
   return(content)
 }
 
+# Directory where the data will be saved
+data_dir <- "/Users/amandaharrison/Desktop/DAP2/final-project-fredrickson/data/"
+
 # Define articles and selectors
 articles <- list(
   list(
-    url = "https://americandisabilityactiongroup.com/are-va-benefits-being-reduced-if-you-earn-too-much/",
+    url =
+      "https://americandisabilityactiongroup.com/are-va-benefits-being-reduced-if-you-earn-too-much/",
     selector = "#post-1896 > div > div",
     file_name = "article1.txt"
   ),
   list(
-    url = "https://www.moaa.org/content/publications-and-media/news-articles/2023-news-articles/advocacy/the-va-has-no-plans-to-cut-off-wealthy-veterans.-heres-what-you-need-to-know/",
-    selector = "body > div.with-toolbar > article > div > div > div.col-xl-8.news-article__col > div:nth-child(2)",
+    url =
+      "https://www.moaa.org/content/publications-and-media/news-articles/2023-news-articles/advocacy/the-va-has-no-plans-to-cut-off-wealthy-veterans.-heres-what-you-need-to-know/",
+    selector =
+      "body > div.with-toolbar > article > div > div > div.col-xl-8.news-article__col > div:nth-child(2)",
     file_name = "article2.txt"
   ),
   list(
-    url = "https://www.washingtonpost.com/opinions/2023/04/03/veterans-affairs-disability-payments-overdue-update/",
+    url =
+      "https://www.washingtonpost.com/opinions/2023/04/03/veterans-affairs-disability-payments-overdue-update/",
     selector = "#__next > article > div.meteredContent.grid-center",
     file_name = "article3.txt"
   ),
   list(
     url = "https://hunterseven.org/vacuts/",
-    selector = "body > div.elementor.elementor-2539.elementor-location-single.post-3199.post.type-post.status-publish.format-standard.has-post-thumbnail.hentry.category-news.tag-cbo.tag-disability.tag-military.tag-pact-act.tag-service-connection.tag-va-benefits.tag-veteran.tag-veteran-health > section.elementor-section.elementor-top-section.elementor-element.elementor-element-baeefbe.elementor-section-boxed.elementor-section-height-default.elementor-section-height-default > div",
+    selector =
+      "body > div.elementor.elementor-2539.elementor-location-single.post-3199.post.type-post.status-publish.format-standard.has-post-thumbnail.hentry.category-news.tag-cbo.tag-disability.tag-military.tag-pact-act.tag-service-connection.tag-va-benefits.tag-veteran.tag-veteran-health > section.elementor-section.elementor-top-section.elementor-element.elementor-element-baeefbe.elementor-section-boxed.elementor-section-height-default.elementor-section-height-default > div",
     file_name = "article4.txt"
   ),
   list(
@@ -189,8 +204,11 @@ articles <- list(
 
 # Loop through articles to scrape or read from local files
 content_list <- lapply(articles, function(article) {
-  scrape_and_save_content(article$url, article$selector, article$file_name)
+  scrape_and_save_content(article$url, article$selector, article$file_name, data_dir)
 })
+
+# Note: To read the archived data instead of scraping, replace the data retrieval code
+# with the path to the archived files in the 'scrape_and_save_content' function.
 
 # Basic visualizations for my understanding and for the writeup
 
