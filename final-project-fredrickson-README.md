@@ -1,40 +1,55 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/OevoCQIE)
-# Data Skills 2 - R
-## Winter Quarter 2024
+# Preliminary Analysis of Veteran Disability
+# Amanda Fredrickson
+# Github ID: mandyfreddy
 
-## Final Project: Reproducible Research
-## Due: March 1
-Template for Final Project in PPHA 30536, Data and Programming in R 2. Current version: winter 2024.
+## Date Created: 20 February 2024
+## Date Completed: 29 February 2024
 
-Fork this assignment and use it to submit the code and writeup portion of the project. See "Final Project Instructions.pdf" for full instructions. 
+## R Version: 4.3.1
 
-_**Coding (70%)**_
+## Required Packages
+- dplyr 
+- readr 
+- ipumsr 
+- ggplot2 
+- rvest 
+- shiny 
+- tidytext 
+- stringr
+- maps 
+- sf 
 
-The code for the project should have following components:
+## Project Description
+This project conducts a preliminary analysis of veteran disability, including economic outcomes and labor force participation. Various datasets from IPUMS and web scraping are used to perform the analysis.
 
-**1.	Data wrangling (20%)**
+## Data Source and Description
+- The IPUMS data is sourced from [IPUMS USA](https://usa.ipums.org/usa/) and [IPUMS CPS](https://cps.ipums.org/cps/). These datasets provide comprehensive data on veterans' demographic and economic characteristics.
+- The web scraping code retrieves articles from specified URLs for sentiment analysis and text processing.
 
-You must use a minimum of three datasets, at least one of which should be retrieved automatically from the web using APIs or web scraping. All processing of the data should be handled by your code, including all merging and reshaping. Any automatic data retrieval must have an option to toggle accessing the web off if the data is already downloaded. This is where you can showcase your abilities practiced in homework 1.
+## Data Files
+- `usa_00014.csv.zip` - Contains IPUMS USA data, used in `data.R` for demographic analysis.
+- `cps_00003.xml` - Contains IPUMS CPS metadata, used in `data.R` for economic analysis.
+- Links to any large data files will be hosted on Dropbox or Drive. (Provide links and descriptions of where they are used in the code.)
 
-**2.	Plotting (20%)**
-From that data, you will create a minimum of two static plots using ggplot, and two interactive Shiny plots. Your Shiny does not have to be shared on shinyapps.io. The skills used here will roughly correspond to your work on homework 2.
+## File Descriptions and Execution Order
+1. `data.R`: Prepares and cleans the IPUMS datasets for analysis. The cleaned datasets are then saved in the specified data directory.
+   - Modify `zip_path` and `data_dir` with the path to your local data storage location.
+2. `model.R`: Runs regression models on the cleaned data to understand the impact of various factors on income.
+   - Ensure the cleaned data from `data.R` is accessible at the specified path.
+3. `textprocess.R`: Processes the scraped web content for sentiment analysis.
+   - The `content_list` should be populated with the actual content if not scraping anew.
+4. `staticplot.R`: Generates static plots from the cleaned data and saves them as images.
+   - Modify file paths in `ggsave` to match your local directory for images.
+5. `shinyapp.R`: An interactive Shiny app for exploring the data. It can be run locally.
+   - No changes are needed unless you want to customize the app's functionality.
 
-**3.	Text processing (10%)**
-You will now introduce some form of text analysis, similar to that of homework 3. While it should relate to your broader question, this may be distinct data from what you created in part 1, and the results of it may be used in your plotting or analysis.
+## Replication Instructions
+To replicate this analysis, download the IPUMS datasets as described above and place them in your local `data` directory. Update all path variables (`zip_path`, `data_dir`, etc.) in the code to match your directory structure. Install and load all required R packages with the versions specified.
 
-**4.	Analysis (10%)**
-Then you will fit a model to your data and report basic results. As this is not a statistics or econometrics class, the model you choose and the validity of your results are not terribly important; fitting an OLS model with fixed effects that has insignificant p-values will not be penalized. The goal is to show you can prepare your data through the previous steps to have it ready for model fitting.
+## Description of Plots
+- 'plot_1.png' is a depiction of the proportion of labor force participation between veterans and non-veterans within different age groups.
+- 'plot_2.png' is a bar chart that shows the proportion of veterans in the labor force across different age groups (18-29, 30-39, etc.), broken down by their disability rating (0, 1-60, 70+, No rating, Not reported). Each age group has five bars representing the proportion of labor force participation for each category of disability rating.
+- 'plot_3.png' is a map of the United States is color-coded to show whether veterans or non-veterans earn more on average within each state.
 
-**5.	Reproducibility (10%)**
-
-The project and files should be structured and documented so that someone could fork your repository and reproduce your results. This means that your README should document the order in which codes should be run, and what needs to be edited (e.g., where the user should set their path) by the user. If the dataset is retrieved automatically, then the final results do not have to reproduce exactly but the code should run smoothly even if the underlying data changes.  
-
-_**Writeup (15%)**_
-
-You will then spend no more than 2-3 pages writing up your project. You should describe your research question, then discuss the approach you took and the coding involved, including discussing any weaknesses or difficulties encountered. Finish with a brief discussion of results, and how this could be fleshed out in future research. The primary purpose of this writeup is to inform me of what I am reading before I look at your code.
-The top of your writeup should include the names of all group members and Github user IDs.
-
-
-
-
-
+## Additional Notes
+This project is a part of DAP2 Final Project for analyzing veteran disability data. The code and analyses are subject to updates, and feedback is welcome.

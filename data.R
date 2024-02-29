@@ -56,6 +56,9 @@ ddi <-
   read_ipums_ddi("/Users/amandaharrison/Desktop/DAP2/final-project-fredrickson/data/cps_00003.xml")
 ipums_cps <- read_ipums_micro(ddi)
 
+# Directory where all data will be saved
+data_dir <- "/Users/amandaharrison/Desktop/DAP2/final-project-fredrickson/data/"
+
 # Clean
 # Drop columns
 ipums_cps_cleaned <- ipums_cps %>% select(-c(2:6, 10:13))
@@ -140,6 +143,20 @@ map_data <- left_join(states_map, average_income_by_state,
   by = c("region" = "STATENAME")
 )
 
+# Save all files
+
+# After cleaning the data, save it to the specified directory
+write_csv(ipums_cleaned, file.path(data_dir, "ipums_cleaned.csv"))
+write_csv(ipums_cps_cleaned, file.path(data_dir, "ipums_cps_cleaned.csv"))
+write_csv(lfp_by_age_vet, file.path(data_dir, "lfp_by_age_vet.csv"))
+write_csv(wage_summary, file.path(data_dir, "wage_summary.csv"))
+write_csv(lfp_by_age_disability, file.path(data_dir, "lfp_by_age_disability.csv"))
+write_csv(lfp_by_age_disability_filtered, file.path(data_dir, "lfp_by_age_disability_filtered.csv"))
+write_csv(average_income_by_state, file.path(data_dir, "average_income_by_state.csv"))
+
+# Continue with the rest of your code
+
+
 # 3. Web scraping (including automatic data retrieval)
 
 # Load required libraries
@@ -164,9 +181,6 @@ scrape_and_save_content <- function(url, selector, file_name, data_dir) {
   }
   return(content)
 }
-
-# Directory where the data will be saved
-data_dir <- "/Users/amandaharrison/Desktop/DAP2/final-project-fredrickson/data/"
 
 # Define articles and selectors
 articles <- list(
