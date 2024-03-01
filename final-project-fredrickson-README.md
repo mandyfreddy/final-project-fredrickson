@@ -27,9 +27,8 @@ This project conducts a preliminary analysis of veteran disability, including ec
 - The web scraping code retrieves articles from specified URLs for sentiment analysis and text processing.
 
 ## Data Files
-- `usa_00014.csv.zip` - Contains IPUMS USA data, used in `data.R` for demographic analysis.
+- `usa_00014.csv.zip` - Contains IPUMS USA data, used in `data.R` for demographic analysis. Unzip manually or in R to access the .csv itself. 
 - `cps_00003.xml` - Contains IPUMS CPS metadata, used in `data.R` for economic analysis.
-- Links to any large data files will be hosted on Dropbox or Drive. (Provide links and descriptions of where they are used in the code.)
 
 ## File Descriptions and Execution Order
 1. `data.R`: Prepares and cleans the IPUMS datasets for analysis. The cleaned datasets are then saved in the specified data directory.
@@ -50,8 +49,8 @@ To replicate this analysis, download the IPUMS datasets as described above and p
 - 'plot_1.png' is a depiction of the proportion of labor force participation between veterans and non-veterans within different age groups.
 - 'plot_2.png' is a bar chart that shows the proportion of veterans in the labor force across different age groups (18-29, 30-39, etc.), broken down by their disability rating (0, 1-60, 70+, No rating, Not reported). Each age group has five bars representing the proportion of labor force participation for each category of disability rating.
 - 'plot_3.png' is a map of the United States is color-coded to show whether veterans or non-veterans earn more on average within each state.
-- 'plot_4.png' is a sentiment analysis of 
-- 'plot_5.png' is a sentiment analysis of 
+- 'plot_4.png' is a sentiment analysis of text content of five articles using the bing lexicon. Most articles show a positive sentiment score, with one article, article 4, being very negative compared to the others
+- 'plot_5.png' is a sentiment analysis plot showing the ratio of positive to negative words in each article, meant to depict the tone of each article around the topic. 
 
 ## Additional Notes
-This project is a part of DAP2 Final Project for analyzing veteran disability data. The code and analyses are subject to updates, and feedback is welcome.
+This project is a part of my DAP2 Final Project for analyzing veteran disability data. 
